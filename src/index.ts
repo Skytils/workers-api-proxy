@@ -1,27 +1,46 @@
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
-		let url = new URL(request.url);
-		url.host = env.ROOT;
+		const { ROOT, API_KEY } = env;
+		const url = new URL(request.url);
+		url.host = ROOT;
 		url.port = "";
-		let cache = caches.default;
-		let response = await cache.match(url);
-		if (!response) {
-			response = await fetch(url, {
-				cf: {
-					cacheEverything: true,
-					cacheTtlByStatus: {
-						"200-299": 3600,
-						"429": 0
-					}
-				},
-				headers: {
-					"API-Key": env.API_KEY
-				}
-			});
-			response = new Response(response.body);
-			response.headers.delete("cache-control");
-			await cache.put(url, response.clone());
+
+		const cache = caches.default;
+
+		const cachedResponse = await cache.match(url);
+		if (cachedResponse) {
+			return cachedResponse;
 		}
+
+		const cacheTime = 3600;
+
+		const upstreamResponse = await fetch(url, {
+			cf: {
+				cacheEverything: true,
+				cacheTtlByStatus: {
+					"200-299": cacheTime,
+					"429": 0
+				}
+			},
+			headers: {
+				"API-Key": request.headers.get('API-Key') ?? API_KEY
+			}
+		});
+
+		let response = new Response(upstreamResponse.body, {
+			status: upstreamResponse.status,
+			statusText: upstreamResponse.statusText,
+			headers: {
+				"content-type": upstreamResponse.headers.get("content-type") ?? "",
+			}
+		});
+		if (upstreamResponse.status === 429) {
+			response.headers.set("cache-control", `public, max-age=${upstreamResponse.headers.get("ratelimit-reset") ?? 30}`);
+		} else {
+			response.headers.set("cache-control", `public, immutable, max-age=${cacheTime}`);
+		}
+		await cache.put(url, response.clone());
+
 		return response;
 	},
 } satisfies ExportedHandler<Env>;
