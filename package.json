@@ -2,6 +2,7 @@
   "name": "workers-api-proxy",
   "version": "0.0.0",
   "private": true,
+  "packageManager": "pnpm@10.2.0+sha256.72f1630812107c8723eb5be4517725f3e13f09cfd8f71571cf29f23ce318bdb7",
   "scripts": {
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",
