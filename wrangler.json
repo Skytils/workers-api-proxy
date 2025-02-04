@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "workers-api-proxy",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-01-29",
+  "observability": {
+    "enabled": true
+  },
+  "vars": { "ROOT": "api.hypixel.net" },
+  "dev" : { "ip": "127.0.0.1" }
+}
