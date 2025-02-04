@@ -5,8 +5,11 @@ export default {
 		url.port = "";
 		return fetch(url, {
 			cf: {
-				cacheTtl: 3600,
-				cacheEverything: true
+				cacheEverything: true,
+				cacheTtlByStatus: {
+					"200-299": 3600,
+					"429": 0
+				}
 			},
 			headers: {
 				"API-Key": env.API_KEY
