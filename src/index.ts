@@ -39,7 +39,7 @@ export default {
 		} else {
 			response.headers.set("cache-control", `public, immutable, max-age=${cacheTime}`);
 		}
-		await cache.put(url, response.clone());
+		ctx.waitUntil(cache.put(url, response.clone()));
 
 		return response;
 	},
