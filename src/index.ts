@@ -3,7 +3,7 @@ export default {
 		let url = new URL(request.url);
 		url.host = env.ROOT;
 		url.port = "";
-		return fetch(url, {
+		let response = await fetch(url, {
 			cf: {
 				cacheEverything: true,
 				cacheTtlByStatus: {
@@ -15,5 +15,8 @@ export default {
 				"API-Key": env.API_KEY
 			}
 		});
+		response = new Response(response.body);
+		response.headers.delete("cache-control");
+		return response;
 	},
 } satisfies ExportedHandler<Env>;
