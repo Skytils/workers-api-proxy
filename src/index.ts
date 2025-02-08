@@ -36,10 +36,12 @@ export default {
 		});
 		if (upstreamResponse.status === 429) {
 			response.headers.set("cache-control", `public, max-age=${upstreamResponse.headers.get("ratelimit-reset") ?? 30}`);
+			ctx.waitUntil(cache.put(url, response.clone()));
 		} else {
+			response.headers.delete("cache-control");
+			ctx.waitUntil(cache.put(url, response.clone()));
 			response.headers.set("cache-control", `public, immutable, max-age=${cacheTime}`);
 		}
-		ctx.waitUntil(cache.put(url, response.clone()));
 
 		return response;
 	},
